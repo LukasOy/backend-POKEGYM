@@ -10,6 +10,9 @@ from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User
 #from models import Person
+import datetime
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+import chilean_rut
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -26,6 +29,7 @@ db.init_app(app)
 CORS(app)
 setup_admin(app)
 
+jwt = JWTManager(app)
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
@@ -36,14 +40,37 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
+@app.route('/login', methods=['POST'])
+def login():
+    body = request.get_json()
+    if "email" not in body:
+        return "falta email"
+    if "password" not in body:
+        return "falta password"
+    if "rut" not in body:
+        return "falta rut"
+    
+    if (chilean_rut.is_valid(body['rut'])==False):
+        return "falta rut"
+    
+ 
+    user = User.query.filter_by(email = body['email'], password= body['password'], rut= body['rut']).first()
+    if(user):
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
+        expira = datetime.timedelta(minutes=1)
+        access = create_access_token(identity=body, expires_delta=expira)
 
-    return jsonify(response_body), 200
+        return jsonify({
+            "token":access
+        })
+    else:
+        return "datos incorrectos"
+
+@app.route('/private', methods=['GET']) #que persona pidio permiso para esta ruta privada
+@jwt_required()
+def privada():
+    identidad = get_jwt_identity
+    return identidad
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
