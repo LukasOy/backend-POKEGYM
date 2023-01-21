@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, Profesor,Estudiante,Ejercicio, Ficha, Reto
 #from models import Person
 import datetime
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -40,8 +40,8 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/login', methods=['POST'])
-def login():
+@app.route('/login/profesor', methods=['POST'])
+def loginprof():
     body = request.get_json()
     if "email" not in body:
         return "falta email"
@@ -53,7 +53,32 @@ def login():
         return "falta rut"
     
  
-    user = User.query.filter_by(email = body['email'], password = body['password'], rut = body['rut']).first()
+    user = Profesor.query.filter_by(email = body['email'], password = body['password'], rut = body['rut']).first()
+    if(user):
+
+        expira = datetime.timedelta(minutes=1)
+        access = create_access_token(identity=body, expires_delta=expira)
+
+        return jsonify({
+            "token":access
+        })
+    else:
+        return "datos incorrectos"
+
+@app.route('/login/estudiantes', methods=['POST'])
+def loginest():
+    body = request.get_json()
+    if "email" not in body:
+        return "falta email"
+    if "password" not in body:
+        return "falta password"
+    if "rut" not in body:
+        return "falta rut"
+    if (chilean_rut.is_valid(body['rut'])==False):
+        return "falta rut"
+    
+ 
+    user = Profesor.query.filter_by(email = body['email'], password = body['password'], rut = body['rut']).first()
     if(user):
 
         expira = datetime.timedelta(minutes=1)
@@ -68,14 +93,31 @@ def login():
 @app.route('/private', methods=['GET']) #que persona pidio permiso para esta ruta privada
 @jwt_required()
 def privada():
-    identidad = get_jwt_identity
+    identidad = get_jwt_identity()
     return identidad
 
-@app.route('/cliente', methods=['GET'])
+@app.route('/estudiante', methods=['GET'])
 @jwt_required()
-def cliente():
-    identidadCliente = get_jwt_identity
-    return identidadCliente
+def estudiante():
+    identidadCliente = get_jwt_identity()
+    return identidadEstudiante
+
+
+@app.route('/profesor', methods=['GET'])
+def profesor():
+        all_profes = Profesor.query.all()
+        new_profes = []
+        for i in range(len(all_profes)):
+         print(all_profes[i].serialize())
+        new_profes.append(all_profes[i].serialize())
+
+        return jsonify(new_profes), 200
+   
+   
+   
+   
+    #identidadCliente = get_jwt_identity()
+    #return identidadProfesor
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
