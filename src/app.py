@@ -49,12 +49,11 @@ def login():
         return "falta password"
     if "rut" not in body:
         return "falta rut"
-    
     if (chilean_rut.is_valid(body['rut'])==False):
         return "falta rut"
     
  
-    user = User.query.filter_by(email = body['email'], password= body['password'], rut= body['rut']).first()
+    user = User.query.filter_by(email = body['email'], password = body['password'], rut = body['rut']).first()
     if(user):
 
         expira = datetime.timedelta(minutes=1)
@@ -71,6 +70,12 @@ def login():
 def privada():
     identidad = get_jwt_identity
     return identidad
+
+@app.route('/cliente', methods=['GET'])
+@jwt_required()
+def cliente():
+    identidadCliente = get_jwt_identity
+    return identidadCliente
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
