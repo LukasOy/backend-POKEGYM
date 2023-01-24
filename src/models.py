@@ -4,8 +4,8 @@ db = SQLAlchemy()
 
 class Profesor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(30), unique=True, nullable=False)
-    apellido = db.Column(db.String(30), unique=True, nullable=False)
+    nombre = db.Column(db.String(30), unique=False, nullable=False)
+    apellido = db.Column(db.String(30), unique=False, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     telefono = db.Column(db.Integer, unique=False, nullable=False)
@@ -17,12 +17,9 @@ class Profesor(db.Model):
 
     def serialize(self):
         return {
-            "id": self.id,
-            "nombre": self.nombre,
-            "apellido": apellido.nombre,
+            "id": self.id,          
             "email": self.email,
-            "telefono": self.telefono,
-            "rut":self.rut
+            "password": self.password
             # do not serialize the password, its a security breach
         }
 
@@ -30,6 +27,7 @@ class Profesor(db.Model):
 class Estudiante(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(30), unique=True, nullable=False)
+    id_profesor = db.Column(db.Integer, db.ForeignKey("profesor.id"))
     apellido = db.Column(db.String(30), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
@@ -37,7 +35,7 @@ class Estudiante(db.Model):
     rut = db.Column(db.String(20), unique=False, nullable=False)
     comentario = db.Column(db.String(500), unique=True, nullable=False)
     rel_p = db.relationship('Profesor')
-    rel_e= db.relationship('Estudiante')
+  
 
     def __repr__(self):
         return '<Estudiante %r>' % self.email

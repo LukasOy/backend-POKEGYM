@@ -104,18 +104,16 @@ def estudiante():
 
 
 @app.route('/profesor', methods=['GET'])
-def profesor():
-        all_profes = Profesor.query.all()
-        new_profes = []
-        for i in range(len(all_profes)):
-         print(all_profes[i].serialize())
-        new_profes.append(all_profes[i].serialize())
+def get_profesores():
+        
+        
+    all_profesores = Profesor.query.all()
 
-        return jsonify(new_profes), 200
+    all_profesores= list(map(lambda profesores: profesores.serialize() ,all_profesores))
    
-   
-   
-   
+    return jsonify(all_profesores),200
+           
+         
     #identidadCliente = get_jwt_identity()
     #return identidadProfesor
 
