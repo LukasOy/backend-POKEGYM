@@ -40,7 +40,7 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/login/profesor', methods=['POST'])
+@app.route('/login', methods=['POST'])
 def loginprof():
     body = request.get_json()
     if "email" not in body:
@@ -64,6 +64,66 @@ def loginprof():
         })
     else:
         return "datos incorrectos"
+
+@app.route('/register', methods=['POST'])
+def registerinfo():
+    body = request.get_json()
+
+    if "nombre" not in body:
+        return "falta nombre de usuario"
+    if "email" not in body:
+        return "falta email"
+    if "password" not in body:
+        return "falta password"
+    if "rut" not in body:
+        return "falta rut"
+    if "telefono" not in body:
+        return "falta telefono"   
+    if (chilean_rut.is_valid(body['rut'])==False):
+        return "falta rut"
+    if "rol_profesor"not in body:
+        return "falta indicar tu rol"
+    if body['rol_profesor'] == True:
+
+        user = Profesor.query.filter_by(nombre = body['nombre'], apellido = body['apellido'], email = body['email'], password = body['password'], telefono=body['telefono'], rut = body['rut'], rol_profesor=body['rol_profesor']).first()
+        if(user):
+
+#            expira = datetime.timedelta(minutes=1)
+#            access = create_access_token(identity=body, expires_delta=expira)
+
+#            return jsonify({
+#                "token":access
+#            })
+            return "el usuario ya existe"  
+        else:
+            #print(body)
+            profesor = Profesor()
+            #print(profesor)
+            profesor.nombre = body["nombre"]
+            profesor.apellido = body["apellido"]
+            profesor.email = body["email"]
+            profesor.password = body["password"]
+            profesor.rut = body["rut"]
+            profesor.telefono = body["telefono"]
+            profesor.rol_profesor = body["rol_profesor"]
+
+            db.session.add(profesor)
+            db.session.commit()
+            return "usuario registrado"     
+
+    else:        
+        user = Estudiante.query.filter_by(nombre = body['nombre'], apellido = body['apellido'], email = body['email'], password = body['password'], telefono=body['telefono'], rut = body['rut']).first()
+        if(user):
+
+            expira = datetime.timedelta(minutes=1)
+            access = create_access_token(identity=body, expires_delta=expira)
+
+            return jsonify({
+                "token":access
+            })
+        else:
+            return "datos incorrectos del estudiante"
+
 
 @app.route('/login/estudiantes', methods=['POST'])
 def loginest():
@@ -97,11 +157,14 @@ def privada():
     return identidad
 
 @app.route('/estudiante', methods=['GET'])
-@jwt_required()
-def estudiante():
-    identidadCliente = get_jwt_identity()
-    return identidadEstudiante
+def get_estudiantes():
+        
+        
+    all_estudiantes = Estudiante.query.all()
 
+    all_estudiantes= list(map(lambda estudiantes: estudiantes.serialize() ,all_estudiantes))
+   
+    return jsonify(all_estudiantes),200
 
 @app.route('/profesor', methods=['GET'])
 def get_profesores():
@@ -114,6 +177,17 @@ def get_profesores():
     return jsonify(all_profesores),200
            
          
+#@app.route('/registerprofe', methods=['GET'])
+#def get_registerprofesores():
+
+ #   allRegister_Profesor.query.filter_by(rol_profesor=True)
+  #  allRegister = list(map(lambda Profesor:Profesor.serialize(), all))
+
+
+# all_profesores= list(map(lambda profesores: profesores.serialize() ,all_profesores))
+
+  #  return jsonify(allRegister),200
+
     #identidadCliente = get_jwt_identity()
     #return identidadProfesor
 
