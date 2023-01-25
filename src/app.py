@@ -170,6 +170,18 @@ def registerinfo():
 #    identidad = get_jwt_identity()
 #    return identidad
 
+@app.route('/login', methods=['GET'])
+def get_alllogin():
+    all_estudiantes=Estudiante.query.all()
+    all_profesores = Profesor.query.all()
+    all_estudiantes= list(map(lambda login: login.serialize() ,all_estudiantes))
+    all_profesores= list(map(lambda login: login.serialize() ,all_profesores))
+   
+    return jsonify({
+        "profesores": all_profesores,
+        "estudiantes": all_estudiantes
+    }),200
+
 @app.route('/estudiante', methods=['GET'])
 def get_estudiantes():
         
