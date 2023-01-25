@@ -38,6 +38,7 @@ class Estudiante(db.Model):
     telefono = db.Column(db.Integer, unique=False, nullable=False)
     rut = db.Column(db.String(20), unique=False, nullable=False)
     comentario = db.Column(db.String(500), unique=True, nullable=False)
+    nivel = db.Column(db.Integer, unique=False, nullable=False)
     id_profesor = db.Column(db.Integer, db.ForeignKey("profesor.id"))
     rel_p = db.relationship('Profesor')
   
@@ -54,6 +55,7 @@ class Estudiante(db.Model):
             "telefono": self.telefono,
             "rut":self.telefono,
             "comentario":self.comentario,
+            "nivel": self.nivel,
             "idProfesor":self.id_profesor
             # do not serialize the password, its a security breach
         }
