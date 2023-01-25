@@ -88,13 +88,13 @@ def registerinfo():
         user = Profesor.query.filter_by(nombre = body['nombre'], apellido = body['apellido'], email = body['email'], password = body['password'], telefono=body['telefono'], rut = body['rut'], rol_profesor=body['rol_profesor']).first()
         if(user):
 
-#            expira = datetime.timedelta(minutes=1)
-#            access = create_access_token(identity=body, expires_delta=expira)
+            expira = datetime.timedelta(minutes=1)
+            access = create_access_token(identity=body, expires_delta=expira)
 
-#            return jsonify({
-#                "token":access
-#            })
-            return "el usuario ya existe"  
+            return jsonify({
+                "token":access
+            })
+            return "el profesor ya existe"  
         else:
             #print(body)
             profesor = Profesor()
@@ -109,7 +109,7 @@ def registerinfo():
 
             db.session.add(profesor)
             db.session.commit()
-            return "usuario registrado"     
+            return "Profesor registrado"     
 
     else:        
         user = Estudiante.query.filter_by(nombre = body['nombre'], apellido = body['apellido'], email = body['email'], password = body['password'], telefono=body['telefono'], rut = body['rut']).first()
@@ -121,40 +121,54 @@ def registerinfo():
             return jsonify({
                 "token":access
             })
+            return "el estudiante ya existe"  
         else:
-            return "datos incorrectos del estudiante"
+            #print(body)
+            estudiante = Estudiante()
+            #print(profesor)
+            estudiante.nombre = body["nombre"]
+            estudiante.apellido = body["apellido"]
+            estudiante.email = body["email"]
+            estudiante.password = body["password"]
+            estudiante.rut = body["rut"]
+            estudiante.telefono = body["telefono"]
+#            estudiante.rol_profesor = body["rol_profesor"]
 
+            db.session.add(estudiante)
+            db.session.commit()
+            return "Estudiante registrado"   
 
-@app.route('/login/estudiantes', methods=['POST'])
-def loginest():
-    body = request.get_json()
-    if "email" not in body:
-        return "falta email"
-    if "password" not in body:
-        return "falta password"
-    if "rut" not in body:
-        return "falta rut"
-    if (chilean_rut.is_valid(body['rut'])==False):
-        return "falta rut"
+#@app.route('/login/estudiantes', methods=['POST'])
+#def loginest():
+#    body = request.get_json()
+#    if "email" not in body:
+#        return "falta email"
+#    if "password" not in body:
+#        return "falta password"
+#    if "rut" not in body:
+#        return "falta rut"
+#    if (chilean_rut.is_valid(body['rut'])==False):
+#        return "falta rut"
     
  
-    user = Profesor.query.filter_by(email = body['email'], password = body['password'], rut = body['rut']).first()
-    if(user):
+#    user = Profesor.query.filter_by(email = body['email'], password = body['password'], rut = body['rut']).first()
+#    if(user):
 
-        expira = datetime.timedelta(minutes=1)
-        access = create_access_token(identity=body, expires_delta=expira)
+#        expira = datetime.timedelta(minutes=1)
+#        access = create_access_token(identity=body, expires_delta=expira)
 
-        return jsonify({
-            "token":access
-        })
-    else:
-        return "datos incorrectos"
-
-@app.route('/private', methods=['GET']) #que persona pidio permiso para esta ruta privada
-@jwt_required()
-def privada():
-    identidad = get_jwt_identity()
-    return identidad
+#        return jsonify({
+#            "token":access
+#        })
+#    else:
+#        return "datos incorrectos"
+        
+#PRIVATE POR AHORA NO LO UTILIZAMOS
+#@app.route('/private', methods=['GET']) #que persona pidio permiso para esta ruta privada
+#@jwt_required()
+#def privada():
+#    identidad = get_jwt_identity()
+#    return identidad
 
 @app.route('/estudiante', methods=['GET'])
 def get_estudiantes():
@@ -176,20 +190,91 @@ def get_profesores():
    
     return jsonify(all_profesores),200
            
-         
-#@app.route('/registerprofe', methods=['GET'])
-#def get_registerprofesores():
+@app.route('/ficha', methods=['POST'])
+def estudiante_ficha():
+    body = request.get_json()
 
- #   allRegister_Profesor.query.filter_by(rol_profesor=True)
-  #  allRegister = list(map(lambda Profesor:Profesor.serialize(), all))
+    ficha = Ficha()
+
+    ficha.peso = int(body['peso'])
+    ficha.estatura = int(body['estatura'])
+    ficha.porcentaje_grasa = int(body['porcentaje_grasa'])
+    ficha.porcentaje_musculo = int(body['porcentaje_musculo'])
+
+    ficha = Ficha(peso=int(body['peso']), estatura=int(body['estatura']), porcentaje_grasa=int(body['porcentaje_grasa']), porcentaje_musculo=int(body['porcentaje_musculo']))
+    db.session.add(ficha)
+    db.session.commit()
+    return "Ficha de estudiante guardada"
+       
+    
+@app.route('/reto', methods=['POST'])
+def reto():
+    body = request.get_json()
+
+    reto = Reto()
+
+    reto.ejercicio = body['ejercicio']
+    
+
+    reto = Reto(ejercicio=['ejercicio'])
+    db.session.add(reto)
+    db.session.commit()
+    return "Ejercicio guardado"
+
+@app.route('/ejercicio', methods=['POST'])
+def ejercicio():
+    body = request.get_json()
+
+    ejercicio = Ejercicio()
+
+    ejercicio.tipo_de_ejercicio = body['tipo_de_ejercicio']
+    ejercicio.series = int(body['series'])
+    ejercicio.repeticiones = int(body['porcentaje_grasa'])
+    ejercicio.peso = int(body['porcentaje_musculo'])
+    ejercicio.descanso = int(body['descanso'])
+    ejercicio.id_estudiante = body['id_estudiante']
+    ejercicio.id_profesor = body['id_profesor']
+
+    ejercicio = Ejercicio(tipo_de_ejercicio=['tipo_de_ejercicio'], series=int(['series']), repeticiones=int(['repeticiones']), peso=int(['peso']), descanso=int(['descanso']),id_estudiante=['id_estudiante'], id_profesor=['id_profesor'] )
+    db.session.add(ejercicio)
+    db.session.commit()
+    return "Ficha de estudiante guardada"
+
+    # tipo_de_ejercicio series repeticiones peso descanso id_estudiante id_profesor
+
+@app.route('/ficha', methods=['GET'])
+def get_ficha():
+        
+        
+    all_fichas = Ficha.query.all()
+
+    all_fichas= list(map(lambda fichas: fichas.serialize() ,all_fichas))
 
 
-# all_profesores= list(map(lambda profesores: profesores.serialize() ,all_profesores))
+    return jsonify(all_fichas),200
 
-  #  return jsonify(allRegister),200
+@app.route('/ejercicio', methods=['GET'])
+def get_ejercicio():
+        
+        
+    all_ejercicio = Ejercicio.query.all()
 
-    #identidadCliente = get_jwt_identity()
-    #return identidadProfesor
+    all_ejercicio= list(map(lambda ejercicio: ejercicio.serialize() ,all_ejercicio))
+   
+    return jsonify(all_ejercicio),200
+
+@app.route('/reto', methods=['GET'])
+def get_reto():
+        
+        
+    all_reto = Reto.query.all()
+
+    all_reto= list(map(lambda reto: reto.serialize() ,all_reto))
+   
+    return jsonify(all_reto),200
+
+
+# id_profesor id_estudiante ejercicio
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':

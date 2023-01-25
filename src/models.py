@@ -32,13 +32,13 @@ class Profesor(db.Model):
 class Estudiante(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(30), unique=True, nullable=False)
-    id_profesor = db.Column(db.Integer, db.ForeignKey("profesor.id"))
     apellido = db.Column(db.String(30), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     telefono = db.Column(db.Integer, unique=False, nullable=False)
     rut = db.Column(db.String(20), unique=False, nullable=False)
     comentario = db.Column(db.String(500), unique=True, nullable=False)
+    id_profesor = db.Column(db.Integer, db.ForeignKey("profesor.id"))
     rel_p = db.relationship('Profesor')
   
 
@@ -53,7 +53,8 @@ class Estudiante(db.Model):
             "email": self.email,
             "telefono": self.telefono,
             "rut":self.telefono,
-            "comentario":self.comentario
+            "comentario":self.comentario,
+            "idProfesor":self.id_profesor
             # do not serialize the password, its a security breach
         }
 
@@ -77,7 +78,6 @@ class Ejercicio(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "email": self.email,
             "ejercicio" : self.tipo_de_ejercicio,
             "series" : self.series,
             "repeticiones" : self.repeticiones,
@@ -97,7 +97,7 @@ class Ficha(db.Model):
     porcentaje_musculo = db.Column(db.Integer, unique=True, nullable=False)
     rel_e= db.relationship('Estudiante')
     
-    
+   
     
     def __repr__(self):
         return '<Ficha %r>' % self.id_estudiante
@@ -106,7 +106,6 @@ class Ficha(db.Model):
         return {
             "id": self.id,
             "id_estudiante" : self.id_estudiante,
-            "email": self.email,
             "peso" : self.peso,
             "estatura" : self.estatura,
             "porcentaje_grasa" : self.porcentaje_grasa,
@@ -130,8 +129,6 @@ class Reto(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "id_profesor" : self.id_profesor,
-            "id_estudiante" : self.id_estudiante,
             "ejercicio": self.ejercicio
             # do not serialize the password, its a security breach
         }
