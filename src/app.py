@@ -216,7 +216,7 @@ def reto():
     reto.ejercicio = body['ejercicio']
     
 
-    reto = Reto(ejercicio=['ejercicio'])
+    reto = Reto(ejercicio=body['ejercicio'])
     db.session.add(reto)
     db.session.commit()
     return "Ejercicio guardado"
