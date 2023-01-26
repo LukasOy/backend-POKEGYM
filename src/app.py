@@ -48,13 +48,13 @@ def loginprof():
         return "falta email"
     if "password" not in body:
         return "falta password"
-    if "rut" not in body:
-        return "falta rut"
-    if (chilean_rut.is_valid(body['rut'])==False):
-        return "falta rut"
+#    if "rut" not in body:
+#        return "falta rut"
+#    if (chilean_rut.is_valid(body['rut'])==False):
+#        return "falta rut"
     
  
-    user = Profesor.query.filter_by(email = body['email'], password = body['password'], rut = body['rut']).first()
+    user = Profesor.query.filter_by(email = body['email'], password = body['password']).first()
     if(user):
 
         expira = datetime.timedelta(minutes=1)
