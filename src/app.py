@@ -54,17 +54,31 @@ def loginprof():
 #        return "falta rut"
     
  
-    user = Profesor.query.filter_by(email = body['email'], password = body['password']).first()
-    if(user):
+    userProfe = Profesor.query.filter_by(email = body['email'], password = body['password']).first()
+    userEstudiante = Estudiante.query.filter_by(email = body['email'], password = body['password']).first()
+    if(userProfe):
 
         expira = datetime.timedelta(minutes=1)
         access = create_access_token(identity=body, expires_delta=expira)
 
         return jsonify({
-            "token":access
+            "user" : userProfe.serialize,
+            "token":access,
+            "status": 200,
+        })
+    elif(userEstudiante):
+        
+        expira = datetime.timedelta(minutes=1)
+        access = create_access_token(identity=body, expires_delta=expira)
+        
+        return jsonify({
+            "user" : userEstudiante.serialize,
+            "token":access,
+            "status": 200,
         })
     else:
-        return "datos incorrectos"
+        return "datos invalidos", 404
+    
 
 @app.route('/register', methods=['POST'])
 def registerinfo():
@@ -286,6 +300,15 @@ def get_reto():
     all_reto= list(map(lambda reto: reto.serialize() ,all_reto))
    
     return jsonify(all_reto),200
+
+@app.route('/nivel/<int:userID>', methods= ['PATCH'])
+def editar(userID):
+    body = request.get_json()
+
+    estudiante= Estudiante.query.get(userID)
+    estudiante.nivel = body['nivel']
+
+    return "nocachonada"
 
 
 # id_profesor id_estudiante ejercicio
