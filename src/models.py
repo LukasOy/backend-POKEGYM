@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.postgresql import ENUM
 
 db = SQLAlchemy()
 
@@ -38,7 +39,7 @@ class Estudiante(db.Model):
     telefono = db.Column(db.Integer, unique=False, nullable=False)
     rut = db.Column(db.String(20), unique=False, nullable=False)
     comentario = db.Column(db.String(500), unique=True, nullable=False)
-    nivel = db.Column(db.Integer, unique=False, nullable=False)
+    nivel = db.Column(ENUM('básico', 'intermedio', 'avanzado', name='nivel_enum'))
     id_profesor = db.Column(db.Integer, db.ForeignKey("profesor.id"))
     rel_p = db.relationship('Profesor')
   

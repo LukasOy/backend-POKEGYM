@@ -13,6 +13,7 @@ from models import db, Profesor,Estudiante,Ejercicio, Ficha, Reto
 import datetime
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import chilean_rut
+from sqlalchemy.dialects.postgresql import ENUM
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -132,6 +133,7 @@ def registerinfo():
             estudiante.password = body["password"]
             estudiante.rut = body["rut"]
             estudiante.telefono = body["telefono"]
+            estudiante.nivel = body["nivel"]
 #            estudiante.rol_profesor = body["rol_profesor"]
 
             db.session.add(estudiante)
