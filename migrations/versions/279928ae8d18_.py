@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: ecdffad09961
+Revision ID: 279928ae8d18
 Revises: 
-Create Date: 2023-01-26 21:56:31.273663
+Create Date: 2023-01-27 22:56:28.783280
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'ecdffad09961'
+revision = '279928ae8d18'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,7 +24,7 @@ def upgrade():
     sa.Column('apellido', sa.String(length=30), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
     sa.Column('password', sa.String(length=80), nullable=False),
-    sa.Column('telefono', sa.Integer(), nullable=False),
+    sa.Column('telefono', sa.String(length=20), nullable=False),
     sa.Column('rut', sa.String(length=20), nullable=False),
     sa.Column('rol_profesor', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
@@ -37,16 +37,14 @@ def upgrade():
     sa.Column('apellido', sa.String(length=30), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
     sa.Column('password', sa.String(length=80), nullable=False),
-    sa.Column('telefono', sa.Integer(), nullable=False),
+    sa.Column('telefono', sa.String(length=20), nullable=False),
     sa.Column('rut', sa.String(length=20), nullable=False),
-    sa.Column('comentario', sa.String(length=500), nullable=False),
-    sa.Column('rol_estudiante', sa.Boolean(), nullable=False),
-    sa.Column('nivel', postgresql.ENUM('básico', 'intermedio', 'avanzado', name='nivel_enum'), nullable=True),
+    sa.Column('comentario', sa.String(length=500), nullable=True),
+    sa.Column('nivel', postgresql.ENUM('basico', 'intermedio', 'avanzado', name='nivel_enum'), nullable=True),
     sa.Column('id_profesor', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['id_profesor'], ['profesor.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('apellido'),
-    sa.UniqueConstraint('comentario'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('nombre')
     )

@@ -9,7 +9,7 @@ class Profesor(db.Model):
     apellido = db.Column(db.String(30), unique=False, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
-    telefono = db.Column(db.Integer, unique=False, nullable=False)
+    telefono = db.Column(db.String(20), unique=False, nullable=False)
     rut = db.Column(db.String(20), unique=True, nullable=False)
     rol_profesor = db.Column(db.Boolean(), unique=False, nullable=False) 
 
@@ -36,11 +36,10 @@ class Estudiante(db.Model):
     apellido = db.Column(db.String(30), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
-    telefono = db.Column(db.Integer, unique=False, nullable=False)
+    telefono = db.Column(db.String(20), unique=False, nullable=False)
     rut = db.Column(db.String(20), unique=False, nullable=False)
-    comentario = db.Column(db.String(500), unique=True, nullable=False)
-    rol_estudiante = db.Column(db.Boolean(), unique=False, nullable=False)
-    nivel = db.Column(ENUM('básico', 'intermedio', 'avanzado', name='nivel_enum'))
+    comentario = db.Column(db.String(500), unique=False, nullable=True)
+    nivel = db.Column(ENUM('basico', 'intermedio', 'avanzado', name='nivel_enum'))
     id_profesor = db.Column(db.Integer, db.ForeignKey("profesor.id"))
     rel_p = db.relationship('Profesor')
   
@@ -52,16 +51,16 @@ class Estudiante(db.Model):
         return {
            "id": self.id,
             "nombre": self.nombre,
-            "apellido": apellido.nombre,
+            "apellido": self.apellido,
             "email": self.email,
             "telefono": self.telefono,
-            "rut":self.telefono,
+            "rut":self.rut,
             "comentario":self.comentario,
             "nivel": self.nivel,
-            "rol_estudiante":self.rol_estudiante,
             "idProfesor":self.id_profesor
             # do not serialize the password, its a security breach
         }
+            
 
 class Ejercicio(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -124,7 +124,7 @@ def registerinfo():
 
             db.session.add(profesor)
             db.session.commit()
-            return "Profesor registrado"     
+            return {"msg":"Profesor registrado"}
 
     else:        
         user = Estudiante.query.filter_by(nombre = body['nombre'], apellido = body['apellido'], email = body['email'], password = body['password'], telefono=body['telefono'], rut = body['rut']).first()
@@ -147,7 +147,8 @@ def registerinfo():
             estudiante.password = body["password"]
             estudiante.rut = body["rut"]
             estudiante.telefono = body["telefono"]
-            estudiante.nivel = body["nivel"]
+            estudiante.nivel = "basico"
+            
 #            estudiante.rol_profesor = body["rol_profesor"]
 
             db.session.add(estudiante)
