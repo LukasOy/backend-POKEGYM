@@ -45,9 +45,9 @@ def sitemap():
 def loginprof():
     body = request.get_json()
     if "email" not in body:
-        return "falta email"
+        return "falta email",400
     if "password" not in body:
-        return "falta password"
+        return "falta password",400
 #    if "rut" not in body:
 #        return "falta rut"
 #    if (chilean_rut.is_valid(body['rut'])==False):
@@ -58,26 +58,28 @@ def loginprof():
     userEstudiante = Estudiante.query.filter_by(email = body['email'], password = body['password']).first()
     if(userProfe):
 
-        expira = datetime.timedelta(minutes=1)
+        expira = datetime.timedelta(minutes=3)
         access = create_access_token(identity=body, expires_delta=expira)
-
-        return jsonify({
-            "user" : userProfe.serialize,
-            "token":access,
+        data = {
+            "user" : userProfe.serialize(),
+            "token": access,
+            "expires": expira.total_seconds(),
             "status": 200,
-        })
+        }
+        return (jsonify(data))
+        
     elif(userEstudiante):
         
         expira = datetime.timedelta(minutes=1)
         access = create_access_token(identity=body, expires_delta=expira)
         
         return jsonify({
-            "user" : userEstudiante.serialize,
-            "token":access,
+            "user" : userEstudiante.serialize(),
+            "token": access,
             "status": 200,
         })
     else:
-        return "datos invalidos", 404
+        return  {"msg":"datos invalidos"}, 404
     
 
 @app.route('/register', methods=['POST'])
@@ -136,7 +138,7 @@ def registerinfo():
             return jsonify({
                 "token":access
             })
-            return "el estudiante ya existe"  
+            return {"msg":"el estudiante ya existe"}  
         else:
             #print(body)
             estudiante = Estudiante()

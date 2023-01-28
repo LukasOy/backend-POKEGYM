@@ -27,9 +27,8 @@ class Profesor(db.Model):
             "rut":self.rut,
             "rol_profesor":self.rol_profesor
             # do not serialize the password, its a security breach
-        }
-
-
+        } 
+   
 class Estudiante(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(30), unique=True, nullable=False)
@@ -59,8 +58,7 @@ class Estudiante(db.Model):
             "nivel": self.nivel,
             "idProfesor":self.id_profesor
             # do not serialize the password, its a security breach
-        }
-            
+        }  
 
 class Ejercicio(db.Model):
     id = db.Column(db.Integer, primary_key=True)
