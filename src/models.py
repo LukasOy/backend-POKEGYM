@@ -33,10 +33,9 @@ class User(db.Model):
 class Ejercicio(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tipo_de_ejercicio = db.Column(db.String(120), unique=True, nullable=False)
-    series = db.Column(db.String(80), unique=False, nullable=False)
-    repeticiones = db.Column(db.String(20), unique=False, nullable=False)
-    peso = db.Column(db.String(20), unique=False, nullable=False)
-    descanso = db.Column(db.String(20), unique=False, nullable=False)
+    series = db.Column(db.Integer, unique=False, nullable=False)
+    repeticiones = db.Column(db.Integer, unique=False, nullable=False)
+    peso = db.Column(db.Integer, unique=False, nullable=False)
     nivel = db.Column(db.Integer, unique=True, nullable=False)
 
 
@@ -46,11 +45,10 @@ class Ejercicio(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "ejercicio" : self.tipo_de_ejercicio,
+            "tipo_de_ejercicio" : self.tipo_de_ejercicio,
             "series" : self.series,
             "repeticiones" : self.repeticiones,
             "peso" : self.peso,
-            "descanso" : self.descanso,
             "nivel": self.nivel
             # do not serialize the password, its a security breach
         }
@@ -59,7 +57,6 @@ class Ficha(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     id_usuario = db.Column(db.Integer, db.ForeignKey('user.id'))
     peso = db.Column(db.Integer, unique=True, nullable=False)
-    estatura = db.Column(db.Integer, unique=True, nullable=False)
     porcentaje_grasa = db.Column(db.Integer, unique=True, nullable=False)
     porcentaje_musculo = db.Column(db.Integer, unique=True, nullable=False)
     nivel = db.Column(db.Integer, unique=True, nullable=False)
@@ -71,9 +68,8 @@ class Ficha(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "id_estudiante" : self.id_usuario,
-            "peso" : self.peso,
-            "estatura" : self.estatura,
+            "id_usuario" : self.id_usuario,
+            "peso" : self.peso,          
             "porcentaje_grasa" : self.porcentaje_grasa,
             "porcentaje_musculo" : self.porcentaje_musculo,
             "nivel": self.nivel
