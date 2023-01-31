@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, Profesor,Estudiante,Ejercicio, Ficha, Reto
+from models import db, User,Ejercicio, Ficha, Reto
 #from models import Person
 import datetime
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -54,30 +54,20 @@ def loginprof():
 #        return "falta rut"
     
  
-    userProfe = Profesor.query.filter_by(email = body['email'], password = body['password']).first()
-    userEstudiante = Estudiante.query.filter_by(email = body['email'], password = body['password']).first()
-    if(userProfe):
+    User = User.query.filter_by(email = body['email'], password = body['password']).first()
+   
+    if(user):
 
         expira = datetime.timedelta(minutes=3)
         access = create_access_token(identity=body, expires_delta=expira)
         data = {
-            "user" : userProfe.serialize(),
+            "user" : user.serialize(),
             "token": access,
             "expires": expira.total_seconds(),
             "status": 200,
         }
         return (jsonify(data))
         
-    elif(userEstudiante):
-        
-        expira = datetime.timedelta(minutes=1)
-        access = create_access_token(identity=body, expires_delta=expira)
-        
-        return jsonify({
-            "user" : userEstudiante.serialize(),
-            "token": access,
-            "status": 200,
-        })
     else:
         return  {"msg":"datos invalidos"}, 404
     
@@ -98,35 +88,33 @@ def registerinfo():
         return "falta telefono"   
     if (chilean_rut.is_valid(body['rut'])==False):
         return "falta rut"
-    if "rol_profesor"not in body:
+    if "rol" not in body:
         return "falta indicar tu rol"
-    if body['rol_profesor'] == True:
 
-        user = Profesor.query.filter_by(nombre = body['nombre'], apellido = body['apellido'], email = body['email'], password = body['password'], telefono=body['telefono'], rut = body['rut'], rol_profesor=body['rol_profesor']).first()
+        user = User.query.filter_by(nombre = body['nombre'], apellido = body['apellido'], email = body['email'], password = body['password'], telefono=body['telefono'], rut = body['rut'], rol=body['rol']).first()
         if(user):
 
-            expira = datetime.timedelta(minutes=1)
+            
+            return {"msg":"el usuario ya existe"}  
+        else:
+            
+            user = User()           
+            user.nombre = body["nombre"]
+            user.apellido = body["apellido"]
+            user.email = body["email"]
+            user.password = body["password"]
+            user.rut = body["rut"]
+            user.telefono = body["telefono"]
+            user.rol = body["rol"]
+            db.session.add(user)
+            db.session.commit()
+
+            expira = datetime.timedelta(minutes=354353)
             access = create_access_token(identity=body, expires_delta=expira)
 
-            return jsonify({
-                "token":access
+            return jsonify({"msg":"Usuario registrado",
+            "token":access
             })
-            return "el profesor ya existe"  
-        else:
-            #print(body)
-            profesor = Profesor()
-            #print(profesor)
-            profesor.nombre = body["nombre"]
-            profesor.apellido = body["apellido"]
-            profesor.email = body["email"]
-            profesor.password = body["password"]
-            profesor.rut = body["rut"]
-            profesor.telefono = body["telefono"]
-            profesor.rol_profesor = body["rol_profesor"]
-
-            db.session.add(profesor)
-            db.session.commit()
-            return {"msg":"Profesor registrado"}
 
     else:        
         user = Estudiante.query.filter_by(nombre = body['nombre'], apellido = body['apellido'], email = body['email'], password = body['password'], telefono=body['telefono'], rut = body['rut']).first()
@@ -190,36 +178,17 @@ def registerinfo():
 #    return identidad
 
 @app.route('/login', methods=['GET'])
-def get_alllogin():
-    all_estudiantes=Estudiante.query.all()
-    all_profesores = Profesor.query.all()
-    all_estudiantes= list(map(lambda login: login.serialize() ,all_estudiantes))
-    all_profesores= list(map(lambda login: login.serialize() ,all_profesores))
+def get_user_login():
+    all_Users=User.query.all()
+    
+    all_Users= list(map(lambda login: login.serialize() ,all_Users))
+    
    
     return jsonify({
-        "profesores": all_profesores,
-        "estudiantes": all_estudiantes
+        "user": all_Users      
     }),200
 
-@app.route('/estudiante', methods=['GET'])
-def get_estudiantes():
-        
-        
-    all_estudiantes = Estudiante.query.all()
 
-    all_estudiantes= list(map(lambda estudiantes: estudiantes.serialize() ,all_estudiantes))
-   
-    return jsonify(all_estudiantes),200
-
-@app.route('/profesor', methods=['GET'])
-def get_profesores():
-        
-        
-    all_profesores = Profesor.query.all()
-
-    all_profesores= list(map(lambda profesores: profesores.serialize() ,all_profesores))
-   
-    return jsonify(all_profesores),200
            
 @app.route('/ficha', methods=['POST'])
 def estudiante_ficha():
@@ -308,8 +277,8 @@ def get_reto():
 def editar(userID):
     body = request.get_json()
 
-    estudiante= Estudiante.query.get(userID)
-    estudiante.nivel = body['nivel']
+    user= User.query.get(userID)
+    user.nivel = body['nivel']
 
     return "nocachonada"
 
