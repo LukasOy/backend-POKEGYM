@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Ejercicio, Ficha, Reto
+from models import db, User, Ejercicio, Ficha 
 # from models import Person
 import datetime
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -16,6 +16,7 @@ import chilean_rut
 from sqlalchemy.dialects.postgresql import ENUM
 
 app = Flask(__name__)
+CORS(app)
 app.url_map.strict_slashes = False
 
 db_url = os.getenv("DATABASE_URL")
@@ -34,7 +35,6 @@ setup_admin(app)
 jwt = JWTManager(app)
 # Handle/serialize errors like a JSON object
 
-
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
@@ -48,37 +48,39 @@ def sitemap():
 
 
 @app.route('/login', methods=['POST'])
-def loginprof():
+def login():
     body = request.get_json()
     if "email" not in body:
-        return "falta email", 400
-    if "password" not in body:
-        return "falta password", 400
-#    if "rut" not in body:
-#        return "falta rut"
-#    if (chilean_rut.is_valid(body['rut'])==False):
-#        return "falta rut"
-
-    user = User.query.filter_by(
+        return {"msg":"falta ingresar tu email",
+                "token":"",
+                "status": 400}
+    elif "password" not in body:
+        return {"msg":"falta tu password",
+                "token":"",
+                "status": 400}
+    else:
+        user = User.query.filter_by(
         email=body['email'], password=body['password']).first()
 
     if (user):
 
-        expira = datetime.timedelta(minutes=3)
-        access = create_access_token(identity=body, expires_delta=expira)
+        expira = datetime.timedelta(minutes=4320)
+        access = create_access_token(identity=user.serialize(), expires_delta=expira)
         data = {
-            "user": user.serialize(),
+            "msg": "logeado",
             "token": access,
-            "expires": expira.total_seconds(),
             "status": 200,
         }
-        return (jsonify(data))
+        return jsonify(data),200
 
     else:
-        return {"msg": "datos invalidos"}, 404
+        return {"msg": "datos invalidos",
+                "token":"",
+                "status": 404}
 
 
 @app.route('/register', methods=['POST'])
+
 def registerinfo():
     body = request.get_json()
 
@@ -91,7 +93,7 @@ def registerinfo():
                 "token":"",
                 "status": 400}
     elif "password" not in body:
-         {"msg":"falta tu",
+         {"msg":"falta tu password",
                 "token":"",
                 "status": 400}
     elif "rut" not in body:
@@ -139,13 +141,20 @@ def registerinfo():
             db.session.add(user)
             db.session.commit()
 
-        expira = datetime.timedelta(minutes=354353)
+        expira = datetime.timedelta(minutes=4320)
         access = create_access_token(identity=body, expires_delta=expira)
 
         return jsonify({"msg": "Usuario registrado",
                         "token": access,
                         "status":200
                         })
+
+@app.route('/token', methods=['POST'])
+@jwt_required()
+def token_validation():
+    return jsonify({
+        "msg":"token valido"
+    })
 
 
 # PRIVATE POR AHORA NO LO UTILIZAMOS
@@ -155,15 +164,15 @@ def registerinfo():
 #    identidad = get_jwt_identity()
 #    return identidad
 
-@app.route('/login', methods=['GET'])
-def get_user_login():
-    all_Users = User.query.all()
+# @app.route('/login', methods=['GET'])
+# def get_user_login():
+#     all_Users = User.query.all()
 
-    all_Users = list(map(lambda login: login.serialize(), all_Users))
+#     all_Users = list(map(lambda login: login.serialize(), all_Users))
 
-    return jsonify({
-        "user": all_Users[0]
-    }), 200
+#     return jsonify({
+#         "user": all_Users[0]
+#     }), 200
 
 
 @app.route('/register', methods=['GET'])
@@ -175,7 +184,7 @@ def get_user_register():
         map(lambda register: register.serialize(), all_Register))
 
     return jsonify({
-        "user": all_Register[0]
+        "user": all_Register
     }), 200
 
 
@@ -196,21 +205,6 @@ def ficha():
     db.session.commit()
 
     return {"msg": "ficha guardada"}, 200
-
-
-@app.route('/reto', methods=['POST'])
-def reto():
-    body = request.get_json()
-
-    reto = Reto()
-
-    reto.ejercicio = body['ejercicio']
-
-    reto = Reto(ejercicio=body['ejercicio'])
-    db.session.add(reto)
-    db.session.commit()
-
-    return {"msg": "Reto guardado"}, 200
 
 
 @app.route('/ejercicio', methods=['POST'])
@@ -254,14 +248,6 @@ def get_ejercicio():
     return jsonify(all_ejercicio), 200
 
 
-@app.route('/reto', methods=['GET'])
-def get_reto():
-
-    all_reto = Reto.query.all()
-
-    all_reto = list(map(lambda reto: reto.serialize(), all_reto))
-
-    return jsonify(all_reto), 200
 
 # @app.route('/nivel/<int:userID>', methods= ['PATCH'])
 # def editar(userID):
