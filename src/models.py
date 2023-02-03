@@ -22,7 +22,7 @@ class User(db.Model):
             "nombre": self.nombre,   
             "apellido":self.apellido,       
             "email": self.email,
-            "password": self.password,
+            # "password": self.password,
             "telefono": self.telefono,
             "rut":self.rut,
             "rol":self.rol
@@ -56,10 +56,10 @@ class Ejercicio(db.Model):
 class Ficha(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     id_usuario = db.Column(db.Integer, db.ForeignKey('user.id'))
-    peso = db.Column(db.Integer, unique=True, nullable=False)
-    porcentaje_grasa = db.Column(db.Integer, unique=True, nullable=False)
-    porcentaje_musculo = db.Column(db.Integer, unique=True, nullable=False)
-    nivel = db.Column(db.Integer, unique=True, nullable=False)
+    peso = db.Column(db.Integer, unique=False, nullable=False)
+    porcentaje_grasa = db.Column(db.Integer, unique=False, nullable=False)
+    porcentaje_musculo = db.Column(db.Integer, unique=False, nullable=False)
+    nivel = db.Column(db.Integer, unique=False, nullable=False)
    
      
     def __repr__(self):

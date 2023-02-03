@@ -140,9 +140,10 @@ def registerinfo():
             user.rol = body["rol"]
             db.session.add(user)
             db.session.commit()
+            userid = User.query.filter_by( rut=body['rut']).first()
 
         expira = datetime.timedelta(minutes=4320)
-        access = create_access_token(identity=body, expires_delta=expira)
+        access = create_access_token(identity=userid.serialize(), expires_delta=expira)
 
         return jsonify({"msg": "Usuario registrado",
                         "token": access,
@@ -152,6 +153,7 @@ def registerinfo():
 @app.route('/token', methods=['POST'])
 @jwt_required()
 def token_validation():
+    
     return jsonify({
         "msg":"token valido"
     })
@@ -164,15 +166,17 @@ def token_validation():
 #    identidad = get_jwt_identity()
 #    return identidad
 
-# @app.route('/login', methods=['GET'])
-# def get_user_login():
-#     all_Users = User.query.all()
+@app.route('/user', methods=['POST'])
+@jwt_required()
+def get_user():
+     body = request.get_json()
+     all = User.query.filter_by( rol=body['rol'])
+    
+     all = list(map(lambda user: user.serialize(), all))
 
-#     all_Users = list(map(lambda login: login.serialize(), all_Users))
-
-#     return jsonify({
-#         "user": all_Users[0]
-#     }), 200
+     return jsonify({
+         "user": all
+     }), 200
 
 
 @app.route('/register', methods=['GET'])
@@ -189,22 +193,63 @@ def get_user_register():
 
 
 @app.route('/ficha', methods=['POST'])
-def ficha():
-    body = request.get_json()
+@jwt_required()
+def user_ficha():
+    body = request.get_json()  
+    user = User.query.filter_by(id=body["id_usuario"]).first()
 
-    ficha = Ficha()
+    if (user):
+        
+        busqueda_ficha = Ficha.query.filter_by(id_usuario=body["id_usuario"]).first()
+    
+        if (busqueda_ficha):
+           
+            busqueda_ficha.peso = int(body['peso'])    
+            busqueda_ficha.porcentaje_grasa = int(body['porcentaje_grasa'])
+            busqueda_ficha.porcentaje_musculo = int(body['porcentaje_musculo'])
+            busqueda_ficha.nivel = int(body['nivel'])
+            busqueda_ficha.id_usuario = int(body['id_usuario'])
+            
+            db.session.commit()
 
-    ficha.peso = int(body['peso'])
-    ficha.porcentaje_grasa = int(body['porcentaje_grasa'])
-    ficha.porcentaje_musculo = int(body['porcentaje_musculo'])
-    ficha.nivel = int(body['nivel'])
+            return jsonify({"msg": "ficha actualizada",
+                             "status":200})
+        else:
+            ficha = Ficha() 
+            ficha.peso = int(body['peso'])    
+            ficha.porcentaje_grasa = int(body['porcentaje_grasa'])
+            ficha.porcentaje_musculo = int(body['porcentaje_musculo'])
+            ficha.nivel = int(body['nivel'])
+            ficha.id_usuario = int(body['id_usuario'])
 
-    ficha = Ficha(peso=int(body['peso']), porcentaje_grasa=int(
-        body['porcentaje_grasa']), porcentaje_musculo=int(body['porcentaje_musculo']), nivel=int(body['nivel']))
-    db.session.add(ficha)
-    db.session.commit()
+            db.session.add(ficha)
+            db.session.commit()
+            return jsonify({"msg": "ficha guardada",
+                             "status":200})
 
-    return {"msg": "ficha guardada"}, 200
+                               
+    else:
+        return jsonify({
+            "msj":"solicitud rechazada",
+            "status":400
+        })
+
+
+
+    # ficha = Ficha()
+    # ficha.peso = int(body['peso'])    
+    # ficha.porcentaje_grasa = int(body['porcentaje_grasa'])
+    # ficha.porcentaje_musculo = int(body['porcentaje_musculo'])
+    # ficha.nivel = int(body['nivel'])
+    # ficha.user_id = int(body['user_id'])
+
+    # ficha = Ficha(peso=int(body['peso']), porcentaje_grasa=int(
+    #     body['porcentaje_grasa']), porcentaje_musculo=int(body['porcentaje_musculo']), nivel=int(body['nivel']), user_id = int(body['user_id']))
+    
+    # db.session.add(ficha)
+    # db.session.commit()
+
+    # return {"msg": "ficha guardada"}, 200
 
 
 @app.route('/ejercicio', methods=['POST'])
@@ -220,22 +265,34 @@ def ejercicio():
     ejercicio.nivel = int(body['nivel'])
 
     ejercicio = Ejercicio(tipo_de_ejercicio=['tipo_de_ejercicio'], series=int(
-        ['series']), repeticiones=int(['repeticiones']), peso=int(['peso']), nivel=int(body['nivel']))
+        ['series']), repeticiones=int(['repeticiones']), peso=int(['peso']), nivel=int(['nivel']))
+    
     db.session.add(ejercicio)
     db.session.commit()
 
     return {"msg": "Ejercicio guardado"}, 200
 
 
-@app.route('/ficha', methods=['GET'])
-def get_ficha():
-
-    all_fichas = Ficha.query.all()
-
-    all_fichas = list(map(lambda fichas: fichas.serialize(), all_fichas))
-
-    return jsonify(all_fichas), 200
-
+@app.route('/ficha/<int:userID>', methods=['GET'])
+@jwt_required()
+def get_ficha(userID):
+    print(userID)
+    ficha1 = Ficha.query.filter_by(
+        id_usuario=userID).first()
+    ficha= ficha1.serialize()
+    print(ficha)
+    if (ficha):  
+        return jsonify({
+        "msg":"tienes acceso a tu ficha",
+        "status":200,
+        "ficha": ficha
+    }) 
+    else:
+        return jsonify({
+        "msg":"no puedes acceder a id",
+        "status":400,
+        "ficha":"" 
+        })
 
 @app.route('/ejercicio', methods=['GET'])
 def get_ejercicio():
